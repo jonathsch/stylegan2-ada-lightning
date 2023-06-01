@@ -2,7 +2,6 @@ import torch
 import numpy as np
 
 
-@torch.jit.script
 def clamp_gain(x: torch.Tensor, g: float, c: float):
     return torch.clamp(x * g, -c, c)
 
