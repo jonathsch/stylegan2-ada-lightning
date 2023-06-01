@@ -47,17 +47,19 @@ def create_trainer(name, config):
                                           save_top_k=-1,
                                           verbose=False,
                                           every_n_epochs=config.save_epoch)
-    gpu_count = torch.cuda.device_count()
+    
     if config.batch_gpu is None:
         config.batch_gpu = config.batch_size
         # config.batch_size *= gpu_count
-        config.val_check_interval *= gpu_count
+        config.val_check_interval *= config.num_devices
+    
     print(f"batch_size = {config.batch_size} / {config.batch_gpu}")
     assert config.batch_size >= config.batch_gpu and config.batch_size % config.batch_gpu == 0
 
-    if gpu_count > 1:
-        trainer = Trainer(gpus=-1,
-                          accelerator='ddp',
+    if config.num_devices > 1:
+        trainer = Trainer(accelerator="gpu",
+                          devices=config.num_devices,
+                          strategy="ddp",
                           num_sanity_val_steps=config.sanity_steps,
                           max_epochs=config.max_epoch,
                           limit_val_batches=config.val_check_percent,

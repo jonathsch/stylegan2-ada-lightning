@@ -29,9 +29,10 @@ generator: stylegan2
 image_size: 256
 num_eval_images: 256
 num_vis_images: 256
-batch_size: 32
-batch_gpu: 8
+batch_size: 64
+batch_gpu: 16
 num_workers: 8
+num_devices: 1 # Number of GPUs to use
 
 compile: True
 
