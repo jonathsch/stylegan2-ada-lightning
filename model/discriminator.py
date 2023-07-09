@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 import numpy as np
 
@@ -13,7 +17,7 @@ class Discriminator(torch.nn.Module):
         self.img_channels = img_channels
         self.block_resolutions = [2 ** i for i in range(self.img_resolution_log2, 2, -1)]
         channels_dict = {res: min(channel_base // res, channel_max) for res in self.block_resolutions + [4]}
-        module_list = [EqualizedConv2d(img_channels, channels_dict[img_resolution], kernel_size=1, activation='lrelu')]
+        module_list = [EqualizedConv2d(img_channels, channels_dict[img_resolution], kernel_size=1, activation=True)]
         for res in self.block_resolutions:
             in_channels = channels_dict[res]
             out_channels = channels_dict[res // 2]
@@ -27,7 +31,7 @@ class Discriminator(torch.nn.Module):
 
 class DiscriminatorBlock(torch.nn.Module):
 
-    def __init__(self, in_channels, out_channels, activation='lrelu'):
+    def __init__(self, in_channels, out_channels, activation=True):
         super().__init__()
         self.in_channels = in_channels
         self.num_layers = 0
@@ -46,14 +50,14 @@ class DiscriminatorBlock(torch.nn.Module):
 
 class DiscriminatorEpilogue(torch.nn.Module):
 
-    def __init__(self, in_channels, resolution, mbstd_group_size=4, mbstd_num_channels=1, activation='lrelu'):
+    def __init__(self, in_channels, resolution, mbstd_group_size=4, mbstd_num_channels=1, activation=True):
         super().__init__()
         self.in_channels = in_channels
         self.resolution = resolution
 
         self.mbstd = MinibatchStdLayer(group_size=mbstd_group_size, num_channels=mbstd_num_channels) if mbstd_num_channels > 0 else None
         self.conv = EqualizedConv2d(in_channels + mbstd_num_channels, in_channels, kernel_size=3, activation=activation)
-        self.fc = FullyConnectedLayer(in_channels * (resolution ** 2), in_channels, activation=activation)
+        self.fc = FullyConnectedLayer(in_channels * (resolution ** 2), in_channels, activation="lrelu")
         self.out = FullyConnectedLayer(in_channels, 1)
 
     def forward(self, x):
@@ -90,8 +94,9 @@ class MinibatchStdLayer(torch.nn.Module):
 
 
 if __name__ == '__main__':
-    from util.misc import print_model_parameter_count, print_module_summary
+    torch.set_float32_matmul_precision("high")
 
-    model = Discriminator(img_resolution=64, img_channels=3)
-    print_module_summary(model, (torch.randn((16, 3, 64, 64)), ))
-    print_model_parameter_count(model)
+    model = Discriminator(img_resolution=64, img_channels=3).cuda()
+    model = torch.compile(model)
+    out = model(torch.randn(4, 3, 64, 64, device='cuda'))
+    print(out.shape)

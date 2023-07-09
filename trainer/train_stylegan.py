@@ -50,6 +50,10 @@ class StyleGAN2Trainer(pl.LightningModule):
             synthesis_layer=config.generator,
         )
         self.D = Discriminator(config.image_size, 3)
+
+        self.G = torch.compile(self.G)
+        self.D = torch.compile(self.D)
+
         self.augment_pipe = AugmentPipe(
             config.ada_start_p,
             config.ada_target,
@@ -355,7 +359,6 @@ class StyleGAN2Trainer(pl.LightningModule):
 def main(config):
     trainer = create_trainer("StyleGAN2", config)
     model = StyleGAN2Trainer(config)
-    # model = torch.compile(model)
     trainer.fit(model, ckpt_path=config.resume)
 
 

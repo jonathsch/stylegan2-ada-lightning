@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 import numpy as np
 from model import activation_funcs, FullyConnectedLayer, clamp_gain, modulated_conv2d, SmoothUpsample, normalize_2nd_moment, identity
@@ -287,9 +291,9 @@ def test_generator():
 
 if __name__ == '__main__':
     from torchsummary import summary
+    torch.set_float32_matmul_precision("high")
 
     model = Generator(512, 512, 2, 64, 3).cuda()
     model = torch.compile(model)
-    print(type(model))
-    summary(model, (512,))
+    out = model(torch.randn(4, 512, device='cuda'))
 

@@ -96,13 +96,13 @@ class SmoothUpsample(torch.nn.Module):
 
 class EqualizedConv2d(torch.nn.Module):
 
-    def __init__(self, in_channels, out_channels, kernel_size, bias=True, activation='linear', resample=identity):
+    def __init__(self, in_channels, out_channels, kernel_size, bias=True, activation = False, resample=identity):
         super().__init__()
         self.resample = resample
         self.padding = kernel_size // 2
         self.weight_gain = 1 / np.sqrt(in_channels * (kernel_size ** 2))
-        self.activation = activation_funcs[activation]['fn']
-        self.activation_gain = activation_funcs[activation]['def_gain']
+        self.activation = leaky_relu_0_2 if activation else identity
+        self.activation_gain = torch.nn.init.calculate_gain('leaky_relu', 0.2) if activation else 1
         weight = torch.randn([out_channels, in_channels, kernel_size, kernel_size])
         bias = torch.zeros([out_channels]) if bias else None
         self.weight = torch.nn.Parameter(weight)
