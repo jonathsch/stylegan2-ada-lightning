@@ -58,7 +58,7 @@ def create_trainer(name, config):
 
     if config.num_devices > 1:
         trainer = Trainer(accelerator="gpu",
-                          devices=config.num_devices,
+                          devices="auto",
                           strategy="ddp",
                           num_sanity_val_steps=config.sanity_steps,
                           max_epochs=config.max_epoch,
@@ -67,7 +67,8 @@ def create_trainer(name, config):
                           val_check_interval=float(min(config.val_check_interval, 1)),
                           check_val_every_n_epoch=max(1, config.val_check_interval),
                           logger=logger,
-                          benchmark=True)
+                          benchmark=True,
+                          enable_progress_bar=False)
     else:
         trainer = Trainer(accelerator="gpu",
                           devices=1,
