@@ -286,10 +286,10 @@ def test_generator():
 
 
 if __name__ == '__main__':
-    from util.misc import print_model_parameter_count, print_module_summary
+    from torchsummary import summary
 
-    model = Generator(512, 512, 2, 64, 3, synthesis_layer='stylegan1')
-    print_module_summary(model, (torch.randn((16, 512)), ))
-    print_model_parameter_count(model)
+    model = Generator(512, 512, 2, 64, 3).cuda()
+    model = torch.compile(model)
+    print(type(model))
+    summary(model, (512,))
 
-    test_generator()
