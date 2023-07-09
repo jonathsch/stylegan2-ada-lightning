@@ -30,9 +30,9 @@ from model.loss import PathLengthPenalty, compute_gradient_penalty
 from trainer import create_trainer
 
 
-torch.backends.cudnn.benchmark = True
-torch.backends.cudnn.allow_tf32 = True
-torch.backends.cudnn.deterministic = False
+# torch.backends.cudnn.benchmark = True
+# torch.backends.cudnn.allow_tf32 = True
+# torch.backends.cudnn.deterministic = False
 torch.set_float32_matmul_precision("medium")
 
 
